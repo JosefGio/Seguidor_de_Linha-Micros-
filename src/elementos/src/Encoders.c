@@ -1,9 +1,6 @@
 #include "elementos/Encoders.h"
 #include "elementos/UART.h"
-
-#define LARGURA_DO_ROBO 1.20 //dm
-#define L_ROBO LARGURA_DO_ROBO/2 //dm
-#define RAIO_RODA    14.5 //mm
+#include <math.h>
 
 // ENCODER ESQUERDO
 //========================================================================================
@@ -81,72 +78,81 @@ Encoder encoder_direito = {
 // ENCODERS
 //========================================================================================
 
-//const float conversao = 1.765;
-const float conversao = 1.54;   //rotacao/pulsos -> 29*pi/60pulsos
-const float conv_segundos = 500.0;  //quando a base de tempo é de 2ms
-
 extern int8_t buffer[20];
 
-static int16_t calcular_velocidade_roda_direita(void) {
+uint16_t delta_EncR = 0;
+uint16_t delta_EncL = 0;
+
+float get_angular_freq_motorMR(void)
+{
+    static float w_raw = 0;
     static uint16_t pulso_atualR, pulso_anteriorlR;
-    static uint16_t deltaR = 0, delta_EncR = 0;
-    uint16_t vel = 0;
     
     pulso_atualR = encoder_direito.obter_pulsos();
     delta_EncR = pulso_atualR - pulso_anteriorlR; //variacao de pulsos
-    deltaR = delta_EncR * conversao;  //distancia em mm (variacao da distância)
 
-    if(!deltaR) 
-        vel = 0;  //roda parada
-    else
-    {
-        vel = deltaR * conv_segundos;  //converte para mm/s
-        pulso_anteriorlR = pulso_atualR;
-        pulso_atualR = 0x00;    //0
-    }
 
-    //sprintf(buffer, "%d\n", (int)(vel));
-    //uart.enviar_string(buffer);
+    w_raw = (2.0 * 3.141592 * delta_EncR)/(PULSES*TS); 
 
-    return vel;
+    pulso_anteriorlR = pulso_atualR;
+    return w_raw;
 }
 
-
-static int16_t calcular_velocidade_roda_esquerda(void) {
+float get_angular_freq_motorML(void)
+{
+    static float w_raw = 0;
     static uint16_t pulso_atualL, pulso_anteriorlL;
-    static uint16_t deltaL = 0;
-    static uint16_t delta_EncL = 0;
-    uint16_t vel = 0;
 
     pulso_atualL = encoder_esquerdo.obter_pulsos();
     delta_EncL = pulso_atualL - pulso_anteriorlL; //variacao de pulsos
-    deltaL = delta_EncL * conversao;  //distancia em dm (variacao da distância)
+    
+    w_raw = (2.0 * 3.141592 * delta_EncL)/(PULSES*TS); 
 
-    if(!deltaL) 
-        vel = 0; //roda parada
-    else
-    {
-        vel = deltaL * conv_segundos;  //variacao da distancia * fator de conversão para mm/s
-        pulso_anteriorlL = pulso_atualL;
-        pulso_atualL = 0x00;
-    }
-
-    //sprintf(buffer, "%d\n", (int)(vel));
-    //uart.enviar_string(buffer);
-
-    return vel;
+    pulso_anteriorlL = pulso_atualL;
+    return w_raw;
 }
 
+float linear_speed(void)
+{
+    float w1 = get_angular_freq_motorMR();
+    float w2 = get_angular_freq_motorML();
 
-velocidades_t _calcular_velocidades_do_robo(void) {
-    int16_t v_roda_direita = calcular_velocidade_roda_direita();
-    int16_t v_roda_esquerda = calcular_velocidade_roda_esquerda();
+    return (((w1 + w2)*RADIUS)/2);
+}
+
+float angular_speed(void)
+{
+    float w1 = get_angular_freq_motorMR();
+    float w2 = get_angular_freq_motorML();
+
+    return (((w1 - w2)*RADIUS)/LENGTH);
+}
+
+float dist_linear(void)
+{
+    static uint16_t delta_s = 0;
+
+    delta_s = ((delta_EncR+delta_EncL)*PULSE_TO_LINEAR_DIST)/2;
+
+    return (delta_s);
+}
+
+float dist_angular(void)
+{
+    static float delta_theta;
+
+    delta_theta = ((delta_EncR-delta_EncL)*PULSE_TO_LINEAR_DIST)/LENGTH;
+    return (delta_theta);
+}
+
+//--------------------//
+
+velocidades_t _calcular_velocidades_do_robo(void) 
+{
 
     velocidades_t velocidades = {
-        //.angular = ((v_roda_direita - v_roda_esquerda) * RAIO_RODA) / (2 * LARGURA_DO_ROBO) * (180/3.14), //rad/s
-        // .angular = ((v_roda_direita - v_roda_esquerda)) / (2 * 100 * L_ROBO), // conversao em rad/s
-        .angular = ((v_roda_direita - v_roda_esquerda)) / (2 * 100 * LARGURA_DO_ROBO), // conversao em rad/s
-        .linear = (v_roda_direita + v_roda_esquerda) / (2 * 100)     // conversao em dm/s 
+        .angular = angular_speed(), // conversao em rad/s
+        .linear = linear_speed()     // conversao em dm/s 
     };
 
     return velocidades;

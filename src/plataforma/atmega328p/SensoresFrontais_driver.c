@@ -3,13 +3,15 @@
 #include "plataforma/atmega328p/libs/ADC.h"
 #include "elementos/SensoresFrontais.h"
 #include "plataforma/drivers_setup.h"
+#include "elementos/Led.h"
+#include "elementos/UART.h"
+#include <avr/io.h>
 
-uint8_t sensores_de_tensao[7];
+uint16_t sensores_de_tensao[7];
 
-static uint8_t _valor_lido(sensor_frontal_t sensor) {
+static uint16_t _valor_lido(sensor_frontal_t sensor) {
     return (sensores_de_tensao[sensor]);
 }
-
 
 static void tratar_leitura_do_ADC(void)
 {/* inicializo no setup na fun��o calibration e em seguida toda
@@ -87,5 +89,9 @@ void setup_driver_SensoresFrontais(void) {
 
 
 ISR(ADC_vect) {
+    // adc_conversion_ch_service(0);
+    // uart.enviar_hexadecimal(ADCH);
+    // uart.enviar_caractere('\n');
     tratar_leitura_do_ADC();
+    led_offboard.alternar();
 }

@@ -1,7 +1,7 @@
 #include "elementos/GerenciadorDeTrajeto.h"
 
 #define NUM_MARCADORES_PARADA 2
-#define NUM_CRUZAMENTOS       6
+#define NUM_CRUZAMENTOS       52
 #define NUM_MARCADORES_PARADA_TOTAIS (NUM_MARCADORES_PARADA + NUM_CRUZAMENTOS)
 #define CURVA                  350
 

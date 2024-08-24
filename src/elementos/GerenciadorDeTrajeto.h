@@ -10,7 +10,7 @@ operação:
 #ifndef PROGRESSAO_DA_PISTA_H
 #define PROGRESSAO_DA_PISTA_H
 
-#define MARCADORES_CURVA 24 //varia por pista
+#define MARCADORES_CURVA 97 //varia por pista
 #define NUMERO_DE_TRECHOS (MARCADORES_CURVA + 1)
 
 #include <stdint.h>

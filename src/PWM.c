@@ -10,7 +10,7 @@ void setup_pwm_e_duty_cycle(void)
   /* Conversao de PWM para duty */
   for(int16_t i = 0; i < 101; i++)
   {
-    vect_duty_cycle[i] = i*(1023.0/100.0);
+    vect_duty_cycle[i] = i*(8000.0/100.0);
   }
 }
 
@@ -18,31 +18,31 @@ void calc_pwm_limit(bits_field *motors)
 {            
   // Impede que os valores do pwm_a e pwm_b ultrapassem o limite pre-definido
   static int16_t ExcessoB = 0, ExcessoA = 0;
-  if (motors->PWM_right > 1023)
+  if (motors->PWM_right > 8000)
   {
-    ExcessoB = (abs(motors->PWM_right) - 1023);
-    motors->PWM_right = 1023;
+    ExcessoB = (abs(motors->PWM_right) - 8000);
+    motors->PWM_right = 8000;
     motors->PWM_left -= ExcessoB;
   }
 
-  else if (motors->PWM_left > 1023)
+  else if (motors->PWM_left > 8000)
   {
-    ExcessoA = (abs(motors->PWM_left) - 1023);
-    motors->PWM_left = 1023;
+    ExcessoA = (abs(motors->PWM_left) - 8000);
+    motors->PWM_left = 8000;
     motors->PWM_right -= ExcessoA;
   }
 
-  if (motors->PWM_right < -1023)
+  if (motors->PWM_right < -8000)
   {
-    ExcessoB = (abs(motors->PWM_right) - 1023);
-    motors->PWM_right = 1023;
+    ExcessoB = (abs(motors->PWM_right) - 8000);
+    motors->PWM_right = 8000;
     motors->PWM_left += ExcessoB;
   }
 
-  else if (motors->PWM_left < -1023)
+  else if (motors->PWM_left < -8000)
   {
-    ExcessoA = (abs(motors->PWM_left) - 1023);
-    motors->PWM_left = 1023;
+    ExcessoA = (abs(motors->PWM_left) - 8000);
+    motors->PWM_left = 8000;
     motors->PWM_right += ExcessoA;
   }
 }

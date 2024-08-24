@@ -22,6 +22,5 @@ typedef struct
 Timer max_timer1;
 Timer max_timer3;
 Timer max_timer2;
-Timer max_timer4;
 
 #endif

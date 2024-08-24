@@ -1,5 +1,6 @@
 #include <avr/io.h>
-#include "plataforma/atmega328p/libs/ADC.h"
+#include "../ADC.h"
+// #include "plataforma/atmega328p/libs/ADC.h"
 
 void adc_conversion_ch_service(unsigned char channel)
 {
@@ -9,8 +10,8 @@ void adc_conversion_ch_service(unsigned char channel)
   ADCSRA |= 0x40;
 }
 
-uint8_t adc_read_service(void)
+uint16_t adc_read_service(void)
 {
-  unsigned char dado = ADCH;
+  uint16_t dado = (ADCH<<8) | (ADCL);
   return dado;
 }
